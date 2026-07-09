@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symposia Chat Diagnostic</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f4f4f9;
+        }
+
+        #chat-box {
+            height: 300px;
+            width: 100%;
+            border: 1px solid #ccc;
+            background: white;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .controls {
+            margin-bottom: 10px;
+        }
+
+        input {
+            padding: 5px;
+        }
+
+        button {
+            padding: 5px 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Symposia WebSockets Diagnostic</h2>
+
+    <div class="controls">
+        <input type="text" id="roomKey" placeholder="Room Key (e.g., BH2O39)">
+        <input type="text" id="username" placeholder="Your Name">
+        <button onclick="connect()">Connect to Room</button>
+    </div>
+
+    <div id="chat-box"></div>
+
+    <div class="controls">
+        <input type="text" id="messageText" placeholder="Type a message..." style="width: 70%;" disabled>
+        <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
+    </div>
+
+    <script>
+        let ws;
+
+        function connect() {
+            const room = document.getElementById("roomKey").value.trim().toUpperCase();
+            const user = document.getElementById("username").value.trim();
+
+            if (!room || !user) { alert("Please enter both Room Key and Name!"); return; }
+
+            // Connect directly to your FastAPI WebSocket endpoint
+            ws = new WebSocket(`ws://localhost:8080/ws/chat/${room}/${user}`);
+
+            ws.onmessage = function (event) {
+                const chatBox = document.getElementById("chat-box");
+                chatBox.innerHTML += `<div>${event.data}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            };
+
+            ws.onopen = function () {
+                document.getElementById("messageText").disabled = false;
+                document.getElementById("sendBtn").disabled = false;
+            };
+        }
+
+        function sendMessage() {
+            const input = document.getElementById("messageText");
+            if (input.value && ws) {
+                ws.send(input.value);
+                input.value = "";
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,8 @@
+# Environments
+.env
+venv/
+env/
+__pycache__/
+
+# Mac/OS hidden files (if applicable)
+.DS_Store

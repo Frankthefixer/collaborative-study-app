@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symposia AI | The Collaborative Study Hub</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg: #1A1A2E;
+            --panel: #2E2E4E;
+            --text: #E8E4F8;
+            --primary: #6C3FC5;
+            --accent: #00E5CC;
+            --reward: #F5A623;
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1,
+        h2,
+        h3,
+        .brand-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* 🚪 Lobby */
+        #login-screen {
+            position: absolute;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .login-box {
+            background: var(--panel);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            width: 340px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        h1.logo {
+            margin: 0;
+            font-size: 2.2rem;
+            color: var(--accent);
+            letter-spacing: -1px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #4a4a6a;
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-family: 'Space Grotesk', sans-serif;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-leave {
+            background: transparent;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            width: auto;
+            padding: 6px 12px;
+            margin: 0 0 0 10px;
+            font-size: 0.8rem;
+        }
+
+        /* 🏆 Session XP Bar */
+        #top-bar {
+            height: 4px;
+            background: var(--panel);
+            width: 100%;
+            position: relative;
+        }
+
+        #xp-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--reward);
+            transition: width 0.5s ease-out;
+            box-shadow: 0 0 10px var(--reward);
+        }
+
+        /* 🚀 V2.0 3-Column Dashboard Layout */
+        #dashboard {
+            display: none;
+            height: calc(100vh - 4px);
+            width: 100vw;
+            padding: 15px;
+            box-sizing: border-box;
+            display: grid;
+            gap: 15px;
+            grid-template-columns: 260px 1fr 260px;
+        }
+
+        .card {
+            background: var(--panel);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        h2 {
+            margin: 0 0 15px 0;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4a4a6a;
+            border-radius: 10px;
+        }
+
+        /* 🏅 Contribution Tracker */
+        .member-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            background: #4a4a6a;
+            color: white;
+        }
+
+        .badge.high {
+            background: var(--primary);
+        }
+
+        .badge.med {
+            background: var(--accent);
+            color: black;
+        }
+
+        /* ⚡ Timer */
+        .clock {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 5px 0;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pomo-controls {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .pomo-controls button {
+            padding: 8px;
+            font-size: 0.85rem;
+        }
+
+        @keyframes alertPulse {
+            0% {
+                color: var(--text);
+            }
+
+            50% {
+                color: var(--accent);
+                text-shadow: 0 0 10px var(--accent);
+            }
+
+            100% {
+                color: var(--text);
+            }
+        }
+
+        .timer-alert {
+            animation: alertPulse 1s infinite;
+        }
+
+        /* 💬 Chat & AI */
+        .chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-row input {
+            margin: 0;
+        }
+
+        .input-row button {
+            margin: 0;
+            width: auto;
+            padding: 0 15px;
+        }
+
+        .msg {
+            padding: 10px 14px;
+            border-radius: 8px;
+            max-width: 85%;
+            width: fit-content;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .msg-sys {
+            color: #a1a1aa;
+            font-size: 0.8rem;
+            text-align: center;
+            width: 100%;
+        }
+
+        .msg-self {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+
+        .msg-other {
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text);
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+            border: 1px solid var(--glass-border);
+        }
+
+        .ai-msg {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .ai-msg h1,
+        .ai-msg h2,
+        .ai-msg h3 {
+            margin-top: 0;
+            color: var(--accent);
+        }
+
+        /* 🔥 Debate Elements */
+        @keyframes flicker {
+            0% {
+                opacity: 0.8;
+                transform: scale(0.95);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+
+            100% {
+                opacity: 0.8;
+                transform: scale(0.95);
+            }
+        }
+
+        .flame {
+            color: #ef4444;
+            animation: flicker 0.5s infinite alternate;
+            font-size: 1.2rem;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="top-bar">
+        <div id="xp-fill"></div>
+    </div>
+
+    <div id="login-screen">
+        <div class="login-box">
+            <h1 class="logo">Symposia</h1>
+            <p style="color: #a1a1aa; font-size: 0.9rem; margin-bottom: 20px;">The Collaborative Study Hub</p>
+            <input type="text" id="username" placeholder="Display Name (Required)">
+            <div style="display: flex; gap: 10px; margin: 15px 0;">
+                <button id="tabCreate" onclick="switchTab('create')" style="background: var(--primary);">Create
+                    Room</button>
+                <button id="tabJoin" onclick="switchTab('join')"
+                    style="background: var(--bg); border: 1px solid var(--glass-border);">Join Room</button>
+            </div>
+            <div id="createFlow">
+                <input type="text" id="createPassword" placeholder="Set Room Password (Optional)">
+                <button onclick="hostRoom()" style="background: var(--accent); color: var(--bg);">Start
+                    Workspace</button>
+            </div>
+            <div id="joinFlow" style="display: none;">
+                <input type="text" id="joinRoomKey" placeholder="Room Key (e.g. NDA-CF3)">
+                <input type="password" id="joinPassword" placeholder="Room Password (If required)">
+                <button onclick="joinRoom()" style="background: var(--accent); color: var(--bg);">Enter
+                    Workspace</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard">
+        <div class="card">
+            <h2>🏅 Contribution Tracker</h2>
+            <div id="tracker-list" style="flex-grow: 1; overflow-y: auto;">
+                <div class="msg-sys" style="margin-top: 20px;">Waiting for cohort data...</div>
+            </div>
+            <div
+                style="font-size: 0.75rem; color: #a1a1aa; text-align: center; padding-top: 10px; border-top: 1px solid var(--glass-border);">
+                XP earned through chat, quizzes & debate.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>🧠 AI Workspace</span>
+                    <span id="debateFlame" class="flame">🔥 LIVE DEBATE</span>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <span id="roomLabel" class="brand-font"
+                        style="color:var(--accent); font-size: 0.9rem; letter-spacing: 1px;"></span>
+                    <button class="btn-leave" onclick="leaveWorkspace()">🚪 Leave</button>
+                </div>
+            </h2>
+
+            <div class="input-row"
+                style="background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--glass-border);">
+                <input type="file" id="fileUpload" accept=".pdf,.docx,.pptx"
+                    style="margin:0; padding: 5px; border: none; background: transparent; width: 60%;">
+                <button onclick="uploadFile()" style="background: #4a4a6a;">Upload</button>
+                <select id="activeDocumentSelector" style="margin:0; width: 35%;">
+                    <option value="">General Knowledge</option>
+                </select>
+            </div>
+
+            <div id="ai-response" class="chat-box">
+                <div class="msg-sys">Upload a document to engage the material, or start a Live Debate.</div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <label
+                    style="font-size: 0.85rem; color: #a1a1aa; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                    <input type="checkbox" id="aiModeToggle" style="width: auto; margin: 0;"> 🥊 Devil's Advocate
+                </label>
+            </div>
+
+            <div class="input-row" id="standardInputRow">
+                <input type="text" id="aiQuestion" placeholder="Engage the material...">
+                <button onclick="askAI()">Ask AI</button>
+                <button onclick="toggleDebateMode(true)" style="background: #ef4444; color: white;">🔥 Start
+                    Debate</button>
+            </div>
+
+            <div class="input-row" id="debateInputRow" style="display: none;">
+                <input type="text" id="debateArgument" placeholder="State your argument to the Moderator...">
+                <button onclick="submitDebateArgument()" style="background: #ef4444; color: white;">Submit
+                    Argument</button>
+                <button onclick="toggleDebateMode(false)" style="background: #4a4a6a;">End Debate</button>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 15px; height: 100%;">
+            <div class="card" style="flex: 0 0 auto;">
+                <h2 style="margin-bottom: 5px; border:none; padding:0;">⚡ Focus Engine <span id="pomoStatus"
+                        style="font-size: 0.8rem; color: #a1a1aa; font-weight: normal;">Ready</span></h2>
+                <div class="clock" id="clockDisplay">25:00</div>
+                <div class="pomo-controls">
+                    <button onclick="controlTimer('start')"
+                        style="background: var(--accent); color: var(--bg);">Start</button>
+                    <button onclick="controlTimer('pause')" style="background: #4a4a6a;">Pause</button>
+                    <button onclick="controlTimer('reset')"
+                        style="background: transparent; border: 1px solid #ef4444; color: #ef4444;">Reset</button>
+                </div>
+            </div>
+
+            <div class="card" style="flex: 1;">
+                <h2>💬 Cohort Discussion</h2>
+                <div id="group-chat" class="chat-box"></div>
+                <div class="input-row">
+                    <input type="text" id="chatMessage" placeholder="Message cohort...">
+                    <button onclick="sendChatMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:8080/api/v1";
+        const WS_URL = "ws://localhost:8080/ws/chat";
+
+        let CURRENT_ROOM = "", USERNAME = "", chatSocket = null, timerInterval = null, totalRoomXP = 0;
+
+        window.onload = () => {
+            const n = localStorage.getItem("symposia_name"), r = localStorage.getItem("symposia_last_room");
+            if (n) document.getElementById("username").value = n;
+            if (r) document.getElementById("joinRoomKey").value = r;
+        };
+
+        function switchTab(t) {
+            document.getElementById('createFlow').style.display = t === 'create' ? 'block' : 'none';
+            document.getElementById('joinFlow').style.display = t === 'join' ? 'block' : 'none';
+            document.getElementById('tabCreate').style.background = t === 'create' ? 'var(--primary)' : 'var(--bg)';
+            document.getElementById('tabJoin').style.background = t === 'join' ? 'var(--primary)' : 'var(--bg)';
+        }
+
+        async function hostRoom() {
+            USERNAME = document.getElementById('username').value.trim();
+            const pass = document.getElementById('createPassword').value.trim();
+            if (!USERNAME) return alert("Display name required.");
+            localStorage.setItem("symposia_name", USERNAME);
+            const res = await fetch(`${API_URL}/rooms/create`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pass ? { password: pass } : {}) });
+            const data = await res.json();
+            CURRENT_ROOM = data.room_key; localStorage.setItem("symposia_last_room", CURRENT_ROOM); enterWorkspace();
+        }
+
+        async function joinRoom() {
+            USERNAME = document.getElementById('username').value.trim();
+            CURRENT_ROOM = document.getElementById('joinRoomKey').value.trim().toUpperCase();
+            const pass = document.getElementById('joinPassword').value.trim();
+            if (!USERNAME || !CURRENT_ROOM) return alert("Name and Room Key required.");
+            localStorage.setItem("symposia_name", USERNAME); localStorage.setItem("symposia_last_room", CURRENT_ROOM);
+            const res = await fetch(`${API_URL}/rooms/join/${CURRENT_ROOM}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pass ? { password: pass } : {}) });
+            if (res.status === 403) return alert("Incorrect Password."); if (!res.ok) return alert("Invalid Room Key."); enterWorkspace();
+        }
+
+        function enterWorkspace() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'grid';
+            document.getElementById('roomLabel').innerText = `ROOM: ${CURRENT_ROOM}`;
+
+            chatSocket = new WebSocket(`${WS_URL}/${CURRENT_ROOM}/${USERNAME}`);
+            chatSocket.onmessage = (event) => {
+                const chatBox = document.getElementById('group-chat');
+                const parts = event.data.split('|');
+
+                // 🏅 Tracker Interceptor
+                if (parts[0] === "SYS_SCORE") {
+                    updateTracker(JSON.parse(parts[1])); return;
+                }
+                // 🔥 Debate Interceptor
+                if (parts.length === 3 && parts[0] === "SYS_DEBATE") {
+                    const aiBox = document.getElementById('ai-response');
+                    if (parts[1] === "start") {
+                        toggleDebateMode(true, true);
+                        aiBox.innerHTML += `<div class="msg-sys" style="color:#ef4444;">⚔️ ${parts[2]} initiated a Live Debate.</div>`;
+                    } else if (parts[1] === "end") {
+                        toggleDebateMode(false, true);
+                        aiBox.innerHTML += `<div class="msg-sys">🛑 The debate was concluded by ${parts[2]}.</div>`;
+                    }
+                    aiBox.scrollTop = aiBox.scrollHeight; return;
+                }
+
+                if (parts.length === 2) chatBox.innerHTML += `<div class="msg-sys">${parts[0]} ${parts[1]}</div>`;
+                else chatBox.innerHTML += `<div class="msg ${parts[1] === USERNAME ? 'msg-self' : 'msg-other'}"><b>${parts[1]}:</b> <br>${parts[2]}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            };
+            timerInterval = setInterval(syncTimer, 1000);
+        }
+
+        // --- TRACKER LOGIC ---
+        function updateTracker(scores) {
+            const list = document.getElementById('tracker-list');
+            list.innerHTML = "";
+            let roomTotal = 0;
+
+            // Sort members by total score
+            const sortedMembers = Object.keys(scores).sort((a, b) => scores[b].total - scores[a].total);
+
+            sortedMembers.forEach(member => {
+                const data = scores[member];
+                roomTotal += data.total;
+                let badgeClass = "badge";
+                if (data.total > 100) badgeClass += " high";
+                else if (data.total > 30) badgeClass += " med";
+
+                list.innerHTML += `
+                    <div class="member-row">
+                        <div><strong style="color: ${member === USERNAME ? 'var(--accent)' : 'white'}">${member}</strong><br>
+                        <span style="font-size:0.75rem; color:#a1a1aa;">Chat: ${data.chat} | Debate: ${data.debate}</span></div>
+                        <div class="${badgeClass}">${data.total} XP</div>
+                    </div>
+                `;
+            });
+
+            // Update Top Bar (Capped visually at 1000 XP for the session)
+            const fillPct = Math.min((roomTotal / 1000) * 100, 100);
+            document.getElementById('xp-fill').style.width = `${fillPct}%`;
+        }
+
+        // --- DEBATE LOGIC ---
+        function toggleDebateMode(isActive, fromSocket = false) {
+            if (!fromSocket) chatSocket.send(`SYS_DEBATE|${isActive ? 'start' : 'end'}`);
+            document.getElementById('debateFlame').style.display = isActive ? 'block' : 'none';
+            document.getElementById('standardInputRow').style.display = isActive ? 'none' : 'flex';
+            document.getElementById('debateInputRow').style.display = isActive ? 'flex' : 'none';
+        }
+
+        async function submitDebateArgument() {
+            const arg = document.getElementById('debateArgument').value;
+            const file = document.getElementById('activeDocumentSelector').value;
+            if (!arg) return;
+
+            const aiBox = document.getElementById('ai-response');
+            aiBox.innerHTML += `<div class="msg msg-self" style="border: 1px solid #ef4444; background: transparent;"><b>[My Argument]:</b> ${arg}</div>`;
+            aiBox.innerHTML += `<div class="msg-sys" id="loading-mod">Moderator evaluating...</div>`;
+            aiBox.scrollTop = aiBox.scrollHeight;
+            document.getElementById('debateArgument').value = "";
+
+            const res = await fetch(`${API_URL}/rooms/debate/moderate`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ room_key: CURRENT_ROOM, username: USERNAME, argument: arg, context_file: file || null })
+            });
+
+            document.getElementById('loading-mod').remove();
+            if (res.ok) {
+                const data = await res.json();
+                const color = data.score_change > 0 ? 'var(--accent)' : '#ef4444';
+                aiBox.innerHTML += `<div class="ai-msg" style="border-left: 4px solid ${color};">
+                                    <h3 style="color:${color}; margin-bottom:5px;">⚖️ Moderator Verdict (${data.score_change > 0 ? '+' : ''}${data.score_change} XP)</h3>
+                                    ${data.verdict}</div>`;
+            }
+            aiBox.scrollTop = aiBox.scrollHeight;
+        }
+
+        // --- EXISTING UTILS (Upload, Timer, AI) ---
+        function leaveWorkspace() {
+            if (chatSocket) chatSocket.close(); if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('dashboard').style.display = 'none'; document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('group-chat').innerHTML = ''; document.getElementById('ai-response').innerHTML = ''; CURRENT_ROOM = '';
+        }
+        function sendChatMessage() { const i = document.getElementById('chatMessage'); if (i.value && chatSocket) { chatSocket.send(i.value); i.value = ""; } }
+        document.getElementById("chatMessage").addEventListener("keypress", (e) => { if (e.key === "Enter") sendChatMessage(); });
+
+        async function syncTimer() {
+            const res = await fetch(`${API_URL}/rooms/${CURRENT_ROOM}/pomodoro/status`); const data = await res.json();
+            const clock = document.getElementById('clockDisplay');
+            clock.innerText = `${Math.floor(data.remaining_seconds / 60).toString().padStart(2, '0')}:${(data.remaining_seconds % 60).toString().padStart(2, '0')}`;
+            document.getElementById('pomoStatus').innerText = data.is_active ? `RUNNING` : `PAUSED`;
+            if (data.is_active && data.remaining_seconds <= 10 && data.remaining_seconds > 0) clock.classList.add("timer-alert"); else clock.classList.remove("timer-alert");
+        }
+        async function controlTimer(act) { await fetch(`${API_URL}/rooms/${CURRENT_ROOM}/pomodoro/control`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: act, duration_minutes: 25 }) }); syncTimer(); }
+
+        async function uploadFile() {
+            const f = document.getElementById('fileUpload'); if (!f.files[0]) return;
+            const form = new FormData(); form.append("file", f.files[0]);
+            document.getElementById('ai-response').innerHTML += `<div class="msg-sys">Uploading...</div>`;
+            const res = await fetch(`${API_URL}/rooms/${CURRENT_ROOM}/upload`, { method: 'POST', body: form });
+            if (res.ok) { document.getElementById('activeDocumentSelector').innerHTML += `<option value="${f.files[0].name}">${f.files[0].name}</option>`; document.getElementById('activeDocumentSelector').value = f.files[0].name; }
+        }
+        async function askAI() {
+            const q = document.getElementById('aiQuestion').value, f = document.getElementById('activeDocumentSelector').value, c = document.getElementById('aiModeToggle').checked;
+            if (!q) return; document.getElementById('ai-response').innerHTML += `<div class="msg msg-self">${q}</div><div class="msg-sys" id="loading-ai">Synthesizing...</div>`;
+            document.getElementById('aiQuestion').value = "";
+            const res = await fetch(`${API_URL}/query`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ room_key: CURRENT_ROOM, question: q, mode: c ? "challenge" : "normal", filename: f || null }) });
+            document.getElementById('loading-ai').remove();
+            if (res.ok) { const d = await res.json(); document.getElementById('ai-response').innerHTML += `<div class="ai-msg" style="border-left: 4px solid ${c ? '#ef4444' : 'var(--accent)'};">${marked.parse(d.answer)}</div>`; }
+        }
+    </script>
+</body>
+
+</html>
